@@ -10,45 +10,10 @@ class LeapMotionGestureControlListener : Listener
 
     private const uint MOUSEEVENTF_SCROLL= 0x0800;
 
-    private Object thisLock = new Object();
     private Object gestureLock = new Object();
 
     private int scroll_speed = 15;
     private LastCircleGesture lastCircleGesture = null;
-
-    private void SafeWriteLine(String line)
-    {
-        lock (thisLock)
-        {
-            Console.WriteLine(line);
-        }
-    }
-
-    private void sendScroll()
-    {
-        SafeWriteLine("Scroll");
-        mouse_event(MOUSEEVENTF_SCROLL, 0, 0, 0, UIntPtr.Zero);
-    }
-
-    public override void OnInit(Controller controller)
-    {
-        SafeWriteLine("Initialized");
-    }
-
-    public override void OnConnect(Controller controller)
-    {
-        SafeWriteLine("Connected");
-    }
-
-    public override void OnDisconnect(Controller controller)
-    {
-        SafeWriteLine("Disconnected");
-    }
-
-    public override void OnExit(Controller controller)
-    {
-        SafeWriteLine("Exited");
-    }
 
     public override void OnFrame(Controller controller)
     {
@@ -70,6 +35,7 @@ class LeapMotionGestureControlListener : Listener
                     }
                 }
             }
+
         }
     }
 
@@ -166,9 +132,6 @@ class LeapMotionGestureControl
 
         // Add on the listener
         controller.AddListener(listener);
-
-        // Keep this process running until Enter is pressed
-        Console.WriteLine("Gesture Control UP");
     }
 
     public void destroy()
@@ -176,8 +139,6 @@ class LeapMotionGestureControl
         // Destroy the things
         controller.RemoveListener(listener);
         controller.Dispose();
-
-        Console.WriteLine("Gesture Control DOWN");
     }
 
 }
