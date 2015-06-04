@@ -9,12 +9,16 @@ namespace LeapMotionGestureControlApp
     static class Program
     {
 
+        static LeapMotionGestureControl leapMotionGestureControl;
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
         static void Main()
         {
+            Application.ApplicationExit += new EventHandler(Program.OnApplicationExit);
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
@@ -23,7 +27,7 @@ namespace LeapMotionGestureControlApp
             {
                 pi.Display();
 
-                LeapMotionGestureControl leapMotionGestureControl = new LeapMotionGestureControl();
+                leapMotionGestureControl = new LeapMotionGestureControl();
 
                 // Make sure the application runs!
                 Application.Run();
@@ -31,5 +35,15 @@ namespace LeapMotionGestureControlApp
             }
 
         }
+
+        static void OnApplicationExit(object sender, EventArgs e)
+        {
+            try
+            {
+                leapMotionGestureControl.destroy();
+            }
+            catch { }
+        }
+
     }
 }

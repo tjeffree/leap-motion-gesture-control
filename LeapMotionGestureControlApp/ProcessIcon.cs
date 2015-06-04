@@ -5,19 +5,10 @@ using LeapMotionGestureControlApp.Properties;
 
 namespace LeapMotionGestureControlApp
 {
-    /// <summary>
-    /// 
-    /// </summary>
     class ProcessIcon : IDisposable
     {
-        /// <summary>
-        /// The NotifyIcon object.
-        /// </summary>
         NotifyIcon ni;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ProcessIcon"/> class.
-        /// </summary>
         public ProcessIcon()
         {
             // Instantiate the NotifyIcon object.
