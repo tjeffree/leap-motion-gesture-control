@@ -1,6 +1,6 @@
-###An <a href="openleap.org">OpenLeap</a> project started by @Tesserex.
+Leap Motion Gesture Control
+===========================
 
-Leap-Mouse
-==========
+All this does is allow you to scroll using a Leap Motion using the circle gesture.
 
-An application to use the Leap Motion as a mouse.
+I might add other gesture controls in the future.
