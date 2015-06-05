@@ -1,6 +1,9 @@
 Leap Motion Gesture Control
 ===========================
 
-All this does is allow you to scroll using a Leap Motion using the circle gesture.
+Simple system tray application to make use of some Leap Motion gestures:
 
-I might add other gesture controls in the future.
+* Draw a circle to scroll (clockwise for down)
+* Make a key tap gesture to move down 1 line
+* Swipe Up/Down for `Home/End` key presses
+* Swipe Left/Right for `Ctrl+Tab` and `Ctrl+Shift+Tab` (tab switching in most browsers)

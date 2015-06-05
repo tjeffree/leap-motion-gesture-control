@@ -1,45 +1,53 @@
 using System;
 using Leap;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 class LeapMotionGestureControlListener : Listener
 {
-
     [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
     private static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, UIntPtr dwExtraInfo);
 
-    private const uint MOUSEEVENTF_SCROLL= 0x0800;
-
-    private Object gestureLock = new Object();
+    private const uint MOUSEEVENTF_SCROLL = 0x0800;
 
     private int scroll_speed = 15;
     private LastCircleGesture lastCircleGesture = null;
 
+    private bool sendingKey = false;
+    private System.Timers.Timer tmr;
+
     public override void OnFrame(Controller controller)
     {
-        lock (gestureLock)
+
+        // Get the most recent frame
+        Frame frame = controller.Frame();
+
+        if (!frame.Hands.IsEmpty)
         {
-            // Get the most recent frame
-            Frame frame = controller.Frame();
-
-            if (!frame.Hands.IsEmpty)
+            for (int g = 0; g < frame.Gestures().Count; g++)
             {
-                for (int g = 0; g < frame.Gestures().Count; g++)
+
+                switch (frame.Gestures()[g].Type)
                 {
-                    if (frame.Gestures()[g].Type == Gesture.GestureType.TYPE_CIRCLE)
-                    {
+                    case Gesture.GestureType.TYPE_CIRCLE:
                         handleScroll(frame, new CircleGesture(frame.Gestures()[g]));
+                        return;
 
-                        // At the first circle gesture, stop here
-                        break;
-                    }
+                    case Gesture.GestureType.TYPE_KEY_TAP:
+                        handleTap(frame, new KeyTapGesture(frame.Gestures()[g]));
+                        return;
+
+                    case Gesture.GestureType.TYPE_SWIPE:
+                        handleSwipe(frame, new SwipeGesture(frame.Gestures()[g]));
+                        return;
                 }
-            }
 
+            }
         }
+
     }
 
-    public void handleScroll(Frame frame, CircleGesture circle) {
+    private void handleScroll(Frame frame, CircleGesture circle) {
 
         int speed           = scroll_speed;
         Boolean isClockwise = checkClockwise(circle);
@@ -104,6 +112,86 @@ class LeapMotionGestureControlListener : Listener
         return scroll_distance;
     }
 
+    private void handleTap(Frame frame, KeyTapGesture tap)
+    {
+        if (!sendingKey)
+        {
+            SendKeys.SendWait("{DOWN}");
+
+        }
+
+        setKeyTimer();
+    }
+
+    private void handleSwipe(Frame frame, SwipeGesture swipe)
+    {
+        if (!sendingKey)
+        {
+            string keyCombo = "";
+            
+            bool isHorizontal = Math.Abs(swipe.Direction.x) > Math.Abs(swipe.Direction.y);
+
+            if (isHorizontal)
+            {
+                float swipeLength = Math.Abs(swipe.StartPosition.x) - Math.Abs(swipe.Position.x);
+                
+                if (swipeLength <= 100 && swipeLength >= -100)
+                {
+                    if (swipe.Direction.x > 0.5)
+                    {
+                        keyCombo = "^({TAB})";
+                    }
+                    else if (swipe.Direction.x < -0.5)
+                    {
+                        keyCombo = "^(+({TAB}))";
+                    }
+                }
+            }
+            else
+            {
+                float swipeLength = Math.Abs(swipe.StartPosition.y) - Math.Abs(swipe.Position.y);
+                
+                if (swipeLength <= 140 && swipeLength >= -140)
+                {
+                    if (swipe.Direction.y > 0.5)
+                    {
+                        keyCombo = "{HOME}";
+                    }
+                    else if (swipe.Direction.y < -0.5)
+                    {
+                        keyCombo = "{END}";
+                    }
+                }
+            }
+
+            SendKeys.SendWait(keyCombo);
+
+        }
+
+        setKeyTimer();
+    }
+
+    private void setKeyTimer()
+    {
+        sendingKey = true;
+
+        if (tmr == null)
+        {
+            tmr = new System.Timers.Timer();
+            tmr.Interval = 500;
+            tmr.Elapsed += new System.Timers.ElapsedEventHandler(timerHandler);
+        }
+
+        tmr.Start();
+
+    }
+
+    private void timerHandler(object sender, EventArgs e)
+    {
+        sendingKey = false;
+        tmr.Stop();
+    }
+
 }
 
 class LastCircleGesture
@@ -129,6 +217,8 @@ class LeapMotionGestureControl
 
         // Watch for circles
         controller.EnableGesture(Gesture.GestureType.TYPE_CIRCLE);
+        controller.EnableGesture(Gesture.GestureType.TYPE_KEY_TAP);
+        controller.EnableGesture(Gesture.GestureType.TYPE_SWIPE);
 
         // Add on the listener
         controller.AddListener(listener);
